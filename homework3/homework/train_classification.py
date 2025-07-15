@@ -17,7 +17,7 @@ def train(
     model_name: str = "classifier",
     num_epoch: int = 1,
     lr: float = 1e-3,
-    batch_size: int = 64,
+    batch_size: int = 256,
     seed: int = 2024,
     **kwargs,
 ):
@@ -44,9 +44,9 @@ def train(
 
     # Load data
     print("loading training data")
-    train_data = load_data("classification_data/train", shuffle = True, batch_size = batch_size, num_workers = 0)
+    train_data = load_data("classification_data/train", shuffle = True, batch_size = batch_size, num_workers = 8)
     # print("loading validation/testing data")
-    val_data = load_data("classification_data/val", shuffle=False, num_workers = 0)
+    val_data = load_data("classification_data/val", shuffle=False, num_workers = 8)
     # print("done loading the data")
     
     # Model
