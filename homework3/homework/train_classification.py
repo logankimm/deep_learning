@@ -19,10 +19,11 @@ def train(
     lr: float = 1e-3,
     batch_size: int = 256,
     seed: int = 2024,
+    num_workers = 2
     **kwargs,
 ):
     device = torch.device("cuda")
-    start = time.time()
+    # start = time.time()
 
     # if torch.cuda.is_available():
     #     device = torch.device("cuda")
@@ -43,10 +44,10 @@ def train(
     logger = tb.SummaryWriter(log_dir)
 
     # Load data
-    print("loading training data")
-    train_data = load_data("classification_data/train", shuffle = True, batch_size = batch_size, num_workers = 8)
+    # print("loading training data")
+    train_data = load_data("classification_data/train", shuffle = True, batch_size = batch_size, num_workers = num_workers)
     # print("loading validation/testing data")
-    val_data = load_data("classification_data/val", shuffle=False, num_workers = 8)
+    val_data = load_data("classification_data/val", shuffle=False, num_workers = num_workers)
     # print("done loading the data")
     
     # Model
@@ -66,7 +67,7 @@ def train(
         val_metric.reset()
 
         model.train()
-        print(epoch, "training", time.time() - start)
+        # print(epoch, "training", time.time() - start)
 
         for img, label in train_data:
             # lstart = time.time()
@@ -84,7 +85,7 @@ def train(
             
             global_step += 1
         
-        print("validation", time.time() - start)
+        # print("validation", time.time() - start)
         # Validation
         with torch.inference_mode():
             model.eval()
@@ -94,12 +95,12 @@ def train(
                 val_metric.add(model.predict(img), label)
                 
         # print on first, last, every 10th epoch
-        # if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 5 == 0:
-        print(
-            f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
-            f"train_acc={train_metric.compute()['accuracy']:.4f} "
-            f"val_acc={val_metric.compute()['accuracy']:.4f}"
-        )
+        if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 5 == 0:
+            print(
+                f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
+                f"train_acc={train_metric.compute()['accuracy']:.4f} "
+                f"val_acc={val_metric.compute()['accuracy']:.4f}"
+            )
 
     # save and overwrite the model in the root directory for grading
     save_model(model)
@@ -113,9 +114,9 @@ if __name__ == "__main__":
 
     parser.add_argument("--exp_dir", type=str, default="logs")
     parser.add_argument("--model_name", type=str, default="classifier")
-    # parser.add_argument("--num_epoch", type=int, default=40)
-    # parser.add_argument("--lr", type=float, default=1e-3)
-    # parser.add_argument("--seed", type=int, default=2024)
+    parser.add_argument("--num_epoch", type=int, default=40)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--seed", type=int, default=2024)
 
     # optional: additional model hyperparamters
     # parser.add_argument("--num_layers", type=int, default=3)

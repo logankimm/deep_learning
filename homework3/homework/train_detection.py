@@ -21,6 +21,7 @@ def train(
     seed: int = 2024,
     seg_weight = 1.0,
     depth_weight = 0.5,
+    num_workers = 2
     **kwargs,
 ):
     device = torch.device("cuda")
@@ -30,8 +31,8 @@ def train(
     np.random.seed(seed)
 
     # Load data
-    train_data = load_data("drive_data/train", batch_size = batch_size, num_workers = 8)
-    val_data = load_data("drive_data/val", batch_size = batch_size, num_workers = 8)
+    train_data = load_data("drive_data/train", batch_size = batch_size, num_workers = num_workers)
+    val_data = load_data("drive_data/val", batch_size = batch_size, num_workers = num_workers)
 
     # Initialize model, losses, optimizer
     model = Detector().to(device)
@@ -75,14 +76,14 @@ def train(
                 metric.add(seg_preds, seg_labels, depth_preds_norm, depth_labels)
 
         val_metrics = metric.compute()
-        # if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
-        print(
-            f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
-            f"IoU={val_metrics['iou']:.4f} "
-            f"DepthErr={val_metrics['abs_depth_error']:.4f} "
-            f"TPDepthErr={val_metrics['tp_depth_error']:.4f} "
-            , time.time() - start
-        )
+        if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
+            print(
+                f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
+                f"IoU={val_metrics['iou']:.4f} "
+                f"DepthErr={val_metrics['abs_depth_error']:.4f} "
+                f"TPDepthErr={val_metrics['tp_depth_error']:.4f} "
+                , time.time() - start
+            )
 
     save_model(model)
     print("model saved")
@@ -92,9 +93,9 @@ if __name__ == '__main__':
 
     parser.add_argument("--exp_dir", type=str, default="logs")
     parser.add_argument("--model_name", type=str, default="detector")
-    # parser.add_argument("--num_epoch", type=int, default=40)
-    # parser.add_argument("--lr", type=float, default=1e-3)
-    # parser.add_argument("--seed", type=int, default=2024)
+    parser.add_argument("--num_epoch", type=int, default=40)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--seed", type=int, default=2024)
 
     # optional: additional model hyperparamters
     # parser.add_argument("--num_layers", type=int, default=3)
