@@ -25,7 +25,7 @@ def train(
     **kwargs,
 ):
     device = torch.device("cuda")
-    start = time.time()
+    # start = time.time()
 
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -41,12 +41,12 @@ def train(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     metric = DetectionMetric()
 
-    best_iou = 0.0
+    # best_iou = 0.0
 
     for epoch in range(num_epoch):
         metric.reset()
         # Training loop
-        print(epoch, "training", time.time() - start)
+        # print(epoch, "training", time.time() - start)
         model.train()
         for batch in train_data:
             images = batch['image'].to(device)
@@ -64,7 +64,7 @@ def train(
             optimizer.step()
 
         # Validation loop
-        print(epoch, "validation", time.time() - start)
+        # print(epoch, "validation", time.time() - start)
         with torch.no_grad():
             model.eval()
             for batch in val_data:
@@ -76,7 +76,7 @@ def train(
                 metric.add(seg_preds, seg_labels, depth_preds_norm, depth_labels)
 
         val_metrics = metric.compute()
-        if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
+        if true or epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
             print(
                 f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
                 f"IoU={val_metrics['iou']:.4f} "
