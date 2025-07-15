@@ -175,9 +175,12 @@ class Detector(torch.nn.Module):
 
         self.down1 = self.DownBlock(64, 128)
         self.down2 = self.DownBlock(128, 256)
+        self.down3 = self.DownBlock(256, 512)
 
-        self.up1 = self.UpBlock(256, 128)
-        self.up2 = self.UpBlock(128, 64)
+        self.up1 = self.UpBlock(512, 256)
+        self.up2 = self.UpBlock(256, 128)
+        self.up3 = self.UpBlock(128, 64)
+
 
         # Segmentation head
         self.segmentation = nn.Conv2d(64, num_classes, kernel_size=1)
@@ -209,9 +212,11 @@ class Detector(torch.nn.Module):
 
         d1 = self.down1(z1)
         d2 = self.down2(d1)
+        d3 = self.down3(d2)
 
-        z = self.up1(d2, d1)
-        z = self.up2(z, z1)
+        z = self.up1(d3, d2)
+        z = self.up2(z, d1)
+        z = self.up3(z, z1)
 
         logits = self.segmentation(z)
         raw_depth = self.depth(z).squeeze(1) # Remove channel dim
