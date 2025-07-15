@@ -137,9 +137,9 @@ class Detector(torch.nn.Module):
                 nn.ReLU(inplace=True)
             )
 
-        def forward(self, x):
+        def forward(self, x, residual):
             x = self.up(x)
-            return self.conv(x)
+            return residual + self.conv(x)
 
     def __init__(
         self,
@@ -158,14 +158,26 @@ class Detector(torch.nn.Module):
         self.register_buffer("input_mean", torch.as_tensor(INPUT_MEAN))
         self.register_buffer("input_std", torch.as_tensor(INPUT_STD))
 
+        kernel_size = 3
+        padding = (kernel_size - 1) // 2
+        
         # TODO: implement
-        self.blocks = nn.Sequential(
+        self.initial = nn.Sequential(
             # nn.ConvTranspose2d(1, 1, 3, stride=2, padding=1, output_padding=1),
-            self.DownBlock(in_channels, 64),
-            self.DownBlock(64, 128),
-            self.UpBlock(128, 64),
-            self.UpBlock(64, 64)
+            # self.DownBlock(in_channels, 64),
+            nn.Conv2d(in_channels, 64, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
         )
+
+        self.down1 = self.DownBlock(64, 128)
+        self.down2 = self.DownBlock(128, 256)
+
+        self.up1 = self.UpBlock(256, 128)
+        self.up2 = self.UpBlock(128, 64)
 
         # Segmentation head
         self.segmentation = nn.Conv2d(64, num_classes, kernel_size=1)
@@ -193,7 +205,13 @@ class Detector(torch.nn.Module):
         z = (x - self.input_mean[None, :, None, None]) / self.input_std[None, :, None, None]
 
         # TODO: replace with actual forward pass
-        z = self.blocks(z)
+        z1 = self.initial(z)
+
+        d1 = self.down1(z1)
+        d2 = self.down2(d1)
+
+        z = self.up1(d2, d1)
+        z = self.up2(z, z1)
 
         logits = self.segmentation(z)
         raw_depth = self.depth(z).squeeze(1) # Remove channel dim
