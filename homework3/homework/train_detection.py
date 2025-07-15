@@ -19,13 +19,13 @@ def train(
     lr: float = 1e-3,
     batch_size: int = 128,
     seed: int = 2024,
-    seg_weight = 1.0,
-    depth_weight = 0.5,
+    seg_weight = 2.0,
+    depth_weight = 0.2,
     num_workers = 2,
     **kwargs,
 ):
     device = torch.device("cuda")
-    # start = time.time()
+    start = time.time()
 
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -36,7 +36,8 @@ def train(
 
     # Initialize model, losses, optimizer
     model = Detector().to(device)
-    seg_criterion = torch.nn.CrossEntropyLoss()
+    class_weights = torch.tensor([1.0, 2.0, 2.0]).to(device) 
+    seg_criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
     depth_criterion = torch.nn.L1Loss() # Mean Absolute Error (MAE)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     metric = DetectionMetric()
@@ -76,13 +77,14 @@ def train(
                 metric.add(seg_preds, seg_labels, depth_preds_norm, depth_labels)
 
         val_metrics = metric.compute()
-        if true or epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
-            print(
-                f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
-                f"IoU={val_metrics['iou']:.4f} "
-                f"DepthErr={val_metrics['abs_depth_error']:.4f} "
-                f"TPDepthErr={val_metrics['tp_depth_error']:.4f} "
-            )
+        # if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
+        print(
+            f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
+            f"IoU={val_metrics['iou']:.4f} "
+            f"DepthErr={val_metrics['abs_depth_error']:.4f} "
+            f"TPDepthErr={val_metrics['tp_depth_error']:.4f} "
+            f"{time.time() - start}"
+        )
 
     save_model(model)
     print("model saved")
