@@ -21,7 +21,7 @@ def train(
     seed: int = 2024,
     seg_weight = 1.0,
     depth_weight = 0.5,
-    num_workers = 2
+    num_workers = 2,
     **kwargs,
 ):
     device = torch.device("cuda")
