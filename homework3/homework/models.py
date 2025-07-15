@@ -161,18 +161,18 @@ class Detector(torch.nn.Module):
         # TODO: implement
         self.blocks = nn.Sequential(
             # nn.ConvTranspose2d(1, 1, 3, stride=2, padding=1, output_padding=1),
-            self.DownBlock(in_channels, 16),
-            self.DownBlock(16, 32),
-            self.UpBlock(32, 16),
-            self.UpBlock(16, 16)
+            self.DownBlock(in_channels, 64),
+            self.DownBlock(64, 128),
+            self.UpBlock(128, 64),
+            self.UpBlock(64, 64)
         )
 
         # Segmentation head
-        self.segmentation = nn.Conv2d(16, num_classes, kernel_size=1)
+        self.segmentation = nn.Conv2d(64, num_classes, kernel_size=1)
                 
         # Depth head
         self.depth = nn.Sequential(
-            nn.Conv2d(16, 1, kernel_size=1),
+            nn.Conv2d(64, 1, kernel_size=1),
             nn.Sigmoid()
         )
 
