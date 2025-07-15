@@ -164,33 +164,34 @@ class Detector(torch.nn.Module):
 
         kernel_size = 3
         padding = (kernel_size - 1) // 2
+        out_channels = 32
         
         # TODO: implement
         self.initial = nn.Sequential(
             # nn.ConvTranspose2d(1, 1, 3, stride=2, padding=1, output_padding=1),
             # self.DownBlock(in_channels, 64),
-            nn.Conv2d(in_channels, 64, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
 
-        self.down1 = self.DownBlock(64, 128)
-        self.down2 = self.DownBlock(128, 256)
-        self.down3 = self.DownBlock(256, 512)
+        self.down1 = self.DownBlock(out_channels, out_channels * 2)
+        self.down2 = self.DownBlock(out_channels * 2, out_channels * 4)
+        self.down3 = self.DownBlock(out_channels * 4, out_channels * 8)
 
-        self.up3 = self.UpBlock(512, 256)
-        self.up1 = self.UpBlock(256, 128)
-        self.up2 = self.UpBlock(128, 64)
+        self.up3 = self.UpBlock(out_channels * 8, out_channels * 4)
+        self.up1 = self.UpBlock(out_channels * 4, out_channels * 2)
+        self.up2 = self.UpBlock(out_channels * 2, out_channels)
 
         # Segmentation head
-        self.segmentation = nn.Conv2d(64, num_classes, kernel_size=1)
+        self.segmentation = nn.Conv2d(out_channels, num_classes, kernel_size=1)
                 
         # Depth head
         self.depth = nn.Sequential(
-            nn.Conv2d(64, 1, kernel_size=1),
+            nn.Conv2d(out_channels, 1, kernel_size=1),
             nn.Sigmoid()
         )
 
@@ -290,15 +291,16 @@ def save_model(model: torch.nn.Module) -> str:
     """
     model_name = None
 
-    for n, m in MODEL_FACTORY.items():
-        # if type(model) is m:
-        if isinstance(model, m):
-            model_name = n
+    # for n, m in MODEL_FACTORY.items():
+    #     # if type(model) is m:
+    #     if isinstance(model, m):
+    #         model_name = n
 
-    if model_name is None:
-        raise ValueError(f"Model type '{str(type(model))}' not supported")
+    # if model_name is None:
+    #     raise ValueError(f"Model type '{str(type(model))}' not supported")
 
-    output_path = HOMEWORK_DIR / f"{model_name}.th"
+    # output_path = HOMEWORK_DIR / f"{model_name}.th"
+    output_path = HOMEWORK_DIR / "detector.th"
     torch.save(model.state_dict(), output_path)
 
     return output_path
