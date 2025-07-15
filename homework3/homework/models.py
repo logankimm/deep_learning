@@ -129,7 +129,7 @@ class Detector(torch.nn.Module):
             super().__init__()
             self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
             self.conv = nn.Sequential(
-                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+                nn.Conv2d(out_channels * 2, out_channels, kernel_size=3, padding=1),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(inplace=True),
                 nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
@@ -137,9 +137,12 @@ class Detector(torch.nn.Module):
                 nn.ReLU(inplace=True)
             )
 
-        def forward(self, x, residual):
+        def forward(self, x, skip):
             x = self.up(x)
-            return residual + self.conv(x)
+            if x.shape != skip.shape:
+                x = F.interpolate(x, size=skip.shape[2:], mode='bilinear', align_corners=True)
+            x = torch.cat([skip, x], dim=1)
+            return self.conv(x)
 
     def __init__(
         self,
@@ -180,7 +183,6 @@ class Detector(torch.nn.Module):
         self.up1 = self.UpBlock(512, 256)
         self.up2 = self.UpBlock(256, 128)
         self.up3 = self.UpBlock(128, 64)
-
 
         # Segmentation head
         self.segmentation = nn.Conv2d(64, num_classes, kernel_size=1)
