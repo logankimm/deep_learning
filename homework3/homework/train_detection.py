@@ -82,7 +82,6 @@ def train(
                 f"IoU={val_metrics['iou']:.4f} "
                 f"DepthErr={val_metrics['abs_depth_error']:.4f} "
                 f"TPDepthErr={val_metrics['tp_depth_error']:.4f} "
-                , time.time() - start
             )
 
     save_model(model)
