@@ -23,11 +23,11 @@ class Classifier(nn.Module):
             kernel_size = 3
             padding = (kernel_size - 1) // 2  # Same padding
             
-            self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+            self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
             self.bn1 = nn.BatchNorm2d(out_channels)
-            self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding)
+            self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding, bias=False)
             self.bn2 = nn.BatchNorm2d(out_channels)
-            self.conv3 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding)
+            self.conv3 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding, bias=False)
             self.bn3 = nn.BatchNorm2d(out_channels)
             self.relu = nn.ReLU()
 
@@ -114,10 +114,10 @@ class Detector(torch.nn.Module):
             self.block = nn.Sequential(
                 # nn.MaxPool2d(2),
                 # DoubleConv(in_channels, out_channels)
-                nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=2, padding=padding),
+                nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=2, padding=padding, bias=False),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(),
-                nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
+                nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU()
             )
@@ -130,10 +130,10 @@ class Detector(torch.nn.Module):
             super().__init__()
             self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
             self.conv = nn.Sequential(
-                nn.Conv2d(out_channels * 2, out_channels, kernel_size=3, padding=1),
+                nn.Conv2d(out_channels * 2, out_channels, kernel_size=3, padding=1, bias=False),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(inplace=True)
             )
@@ -170,10 +170,10 @@ class Detector(torch.nn.Module):
         self.initial = nn.Sequential(
             # nn.ConvTranspose2d(1, 1, 3, stride=2, padding=1, output_padding=1),
             # self.DownBlock(in_channels, 64),
-            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding),
+            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
