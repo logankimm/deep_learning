@@ -234,8 +234,8 @@ class Detector(torch.nn.Module):
         logits = self.segmentation(z)
         raw_depth = self.depth(z).squeeze(1) # Remove channel dim
 
-        if self.training:  # Return raw depth during training
-            return logits, raw_depth
+        # if self.training:  # Return raw depth during training
+        #     return logits, raw_depth
         return logits, self.depth_activation(raw_depth)
 
     def predict(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
