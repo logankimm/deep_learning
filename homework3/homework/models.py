@@ -302,16 +302,16 @@ def save_model(model: torch.nn.Module) -> str:
     """
     model_name = None
 
-    # for n, m in MODEL_FACTORY.items():
-    #     # if type(model) is m:
-    #     if isinstance(model, m):
-    #         model_name = n
+    for n, m in MODEL_FACTORY.items():
+        if type(model) is m:
+        # if isinstance(model, m):
+            model_name = n
 
-    # if model_name is None:
-    #     raise ValueError(f"Model type '{str(type(model))}' not supported")
+    if model_name is None:
+        raise ValueError(f"Model type '{str(type(model))}' not supported")
 
-    # output_path = HOMEWORK_DIR / f"{model_name}.th"
-    output_path = HOMEWORK_DIR / "detector.th"
+    output_path = HOMEWORK_DIR / f"{model_name}.th"
+    # output_path = HOMEWORK_DIR / "detector.th"
     torch.save(model.state_dict(), output_path)
 
     return output_path

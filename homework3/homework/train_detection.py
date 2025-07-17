@@ -19,9 +19,9 @@ def train(
     lr: float = 1e-3,
     batch_size: int = 128,
     seed: int = 2024,
-    seg_weight = 2.0,
-    depth_weight = 0.1,
-    num_workers = 8,
+    seg_weight = 1,
+    depth_weight = 1,
+    num_workers = 2,
     **kwargs,
 ):
     device = torch.device("cuda")
@@ -36,13 +36,16 @@ def train(
 
     # Initialize model, losses, optimizer
     model = Detector().to(device)
-    class_weights = torch.tensor([1.0, 3.0, 3.0]).to(device) 
+    class_weights = torch.tensor([0.3, 1.0, 1.0]).to(device) 
     seg_criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
     # seg_criterion = torch.nn.CrossEntropyLoss()
     depth_criterion = torch.nn.L1Loss() # Mean Absolute Error (MAE)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epoch)
     metric = DetectionMetric()
 
+    scheduler.step()
+    print("testing the save_model function")
     # best_iou = 0.0
 
     for epoch in range(num_epoch):
@@ -64,6 +67,7 @@ def train(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step()
 
         # Validation loop
         # print(epoch, "validation", time.time() - start)

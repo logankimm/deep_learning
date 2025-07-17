@@ -19,11 +19,11 @@ def train(
     lr: float = 1e-3,
     batch_size: int = 256,
     seed: int = 2024,
-    num_workers = 8,
+    num_workers = 2,
     **kwargs,
 ):
     device = torch.device("cuda")
-    # start = time.time()
+    start = time.time()
 
     # if torch.cuda.is_available():
     #     device = torch.device("cuda")
@@ -95,12 +95,13 @@ def train(
                 val_metric.add(model.predict(img), label)
                 
         # print on first, last, every 10th epoch
-        if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 5 == 0:
-            print(
-                f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
-                f"train_acc={train_metric.compute()['accuracy']:.4f} "
-                f"val_acc={val_metric.compute()['accuracy']:.4f}"
-            )
+        # if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 5 == 0:
+        print(
+            f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
+            f"train_acc={train_metric.compute()['accuracy']:.4f} "
+            f"val_acc={val_metric.compute()['accuracy']:.4f}"
+            , time.time() - start
+        )
 
     # save and overwrite the model in the root directory for grading
     save_model(model)
