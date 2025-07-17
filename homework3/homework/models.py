@@ -173,9 +173,9 @@ class Detector(torch.nn.Module):
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
+            # nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding, bias=False),
+            # nn.BatchNorm2d(out_channels),
+            # nn.ReLU(),
         )
 
         self.down1 = self.DownBlock(out_channels, out_channels * 2)
@@ -187,13 +187,22 @@ class Detector(torch.nn.Module):
         self.up2 = self.UpBlock(out_channels * 2, out_channels)
 
         # Segmentation head
-        self.segmentation = nn.Conv2d(out_channels, num_classes, kernel_size=1)
+        self.segmentation = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.Conv2d(out_channels, num_classes, kernel_size=1)
+        )
                 
         # Depth head
         self.depth = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
             nn.Conv2d(out_channels, 1, kernel_size=1),
-            nn.Sigmoid()
         )
+
+        self.depth_activation = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
@@ -225,7 +234,9 @@ class Detector(torch.nn.Module):
         logits = self.segmentation(z)
         raw_depth = self.depth(z).squeeze(1) # Remove channel dim
 
-        return logits, raw_depth
+        if self.training:  # Return raw depth during training
+            return logits, raw_depth
+        return logits, self.depth_activation(raw_depth)
 
     def predict(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """

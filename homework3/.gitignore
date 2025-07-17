@@ -1,3 +1,4 @@
 classification_data/
 drive_data/
 logs/
+**/__pycache__/

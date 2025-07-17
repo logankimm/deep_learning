@@ -15,13 +15,13 @@ import time
 def train(
     exp_dir: str = "logs",
     model_name: str = "detector",
-    num_epoch: int = 2,
+    num_epoch: int = 5,
     lr: float = 1e-3,
     batch_size: int = 128,
     seed: int = 2024,
     seg_weight = 2.0,
-    depth_weight = 0.2,
-    num_workers = 2,
+    depth_weight = 0.1,
+    num_workers = 8,
     **kwargs,
 ):
     device = torch.device("cuda")
@@ -36,8 +36,9 @@ def train(
 
     # Initialize model, losses, optimizer
     model = Detector().to(device)
-    class_weights = torch.tensor([1.0, 2.0, 2.0]).to(device) 
+    class_weights = torch.tensor([1.0, 3.0, 3.0]).to(device) 
     seg_criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
+    # seg_criterion = torch.nn.CrossEntropyLoss()
     depth_criterion = torch.nn.L1Loss() # Mean Absolute Error (MAE)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     metric = DetectionMetric()

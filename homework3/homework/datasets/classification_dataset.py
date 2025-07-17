@@ -97,5 +97,6 @@ def load_data(
         batch_size=batch_size,
         shuffle=shuffle,
         drop_last=True,
-        persistent_workers=True,
+        # persistent_workers=True,
+        pin_memory=True,
     )

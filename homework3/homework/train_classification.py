@@ -19,7 +19,7 @@ def train(
     lr: float = 1e-3,
     batch_size: int = 256,
     seed: int = 2024,
-    num_workers = 2,
+    num_workers = 8,
     **kwargs,
 ):
     device = torch.device("cuda")
