@@ -65,7 +65,7 @@ def train(
             # return
             batch = {k: v.to(device) for k, v in batch.items()}
             optimizer.zero_grad()
-            predictions = model(batch["track_left"], batch["track_right"])
+            predictions = model(**batch)
             
             # Calculate masked loss
             loss = criterion(predictions, batch["waypoints"])
